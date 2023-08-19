@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": false,
+    "target": "ES2022",
+    "module": "ES2022",
+    "outDir": "dist",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strictNullChecks": true
+  },
+  "include": [
+    "src/**/*.ts",
+  ]
+}
