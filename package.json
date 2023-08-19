@@ -22,5 +22,18 @@
   },
   "dependencies": {
     "chalk": "^5.3.0"
-  }
+  },
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liplum/nodejs-log.git"
+  },
+  "keywords": [
+    "log",
+    "logger"
+  ],
+  "bugs": {
+    "url": "https://github.com/liplum/nodejs-log/issues"
+  },
+  "homepage": "https://github.com/liplum/nodejs-log#readme"
 }
