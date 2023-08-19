@@ -35,16 +35,16 @@ export const LogLevels = {
 }
 
 export const globalOptions: {
-  logFile?: string
-  consoleLevel: LogLevel
+  logFilePath?: string
+  consoleOutputRequired?: LogLevel
 } = {
-  logFile: undefined,
-  consoleLevel: LogLevels.INFO,
+  logFilePath: undefined,
+  consoleOutputRequired: undefined,
 }
 
 export function initGlobalLogDir(directory: string): void {
   fs.mkdirSync(directory, { recursive: true })
-  globalOptions.logFile = path.join(
+  globalOptions.logFilePath = path.join(
     directory,
     `${new Date().toISOString().slice(0, 10)}.log`
   )
@@ -99,13 +99,13 @@ class LoggerImpl implements Logger {
       logLine = appendLogEntry(logLine, entry)
     }
 
-    if (globalOptions.logFile) {
+    if (globalOptions.logFilePath) {
       // Write to the global log file
-      fs.appendFileSync(globalOptions.logFile, logLine)
-      fs.appendFileSync(globalOptions.logFile, "\n")
+      fs.appendFileSync(globalOptions.logFilePath, logLine)
+      fs.appendFileSync(globalOptions.logFilePath, "\n")
     }
 
-    if (level.level >= globalOptions.consoleLevel.level) {
+    if (!globalOptions.consoleOutputRequired || level.level >= globalOptions.consoleOutputRequired.level) {
       // Write to the console for levels higher than the minimum required level
       console.log(tint(logLine, level.color))
     }
