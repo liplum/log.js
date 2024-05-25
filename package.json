@@ -6,9 +6,7 @@
   "type": "module",
   "module": "src/index.ts",
   "files": [
-    "src/**/*.ts",
-    "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist"
   ],
   "scripts": {
     "test": "tsc && ava"
@@ -26,14 +24,14 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/liplum/nodejs-log.git"
+    "url": "git+https://github.com/liplum/log.js.git"
   },
   "keywords": [
     "log",
     "logger"
   ],
   "bugs": {
-    "url": "https://github.com/liplum/nodejs-log/issues"
+    "url": "https://github.com/liplum/log.js/issues"
   },
-  "homepage": "https://github.com/liplum/nodejs-log#readme"
+  "homepage": "https://github.com/liplum/log.js#readme"
 }
