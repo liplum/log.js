@@ -10,11 +10,13 @@ export interface LoggerProvider {
 
 class LoggerProviderImpl implements LoggerProvider {
   logFile?: string
-  constructor(logFile?: string) {
+  consoleOutputRequired?: LogLevel
+  constructor(logFile?: string, consoleOutputRequired?: LogLevel) {
     this.logFile = logFile
+    this.consoleOutputRequired = consoleOutputRequired
   }
-  createLogger(channel?: string): Logger {
-    return new LoggerImpl(channel, this.logFile)
+  createLogger = (channel?: string): Logger => {
+    return new LoggerImpl(this, channel)
   }
 }
 
@@ -48,25 +50,24 @@ export const LogLevels = {
   VERBOSE: createLogLevel("VERBOSE", 1),
 }
 
+const _globalProvider = new LoggerProviderImpl()
 
-const _globalLoggerProvider = new LoggerProviderImpl()
-
-export const globalLoggerProvider: LoggerProvider = _globalLoggerProvider
+export const globalProvider: LoggerProvider = _globalProvider
 
 export const globalOptions: {
   logFilePath?: string
   consoleOutputRequired?: LogLevel
 } = {
   get logFilePath(): string | undefined {
-    return _globalLoggerProvider.logFile
+    return _globalProvider.logFile
   },
   set logFilePath(path: string) {
-    _globalLoggerProvider.logFile = path
+    _globalProvider.logFile = path
   },
   consoleOutputRequired: undefined,
 }
 
-const generateLogFilePath = (logDir:string):string=>{
+const generateLogFilePath = (logDir: string): string => {
   fs.mkdirSync(logDir, { recursive: true })
   return path.join(
     logDir,
@@ -74,7 +75,7 @@ const generateLogFilePath = (logDir:string):string=>{
   )
 }
 
-export function initGlobalLogDir(logDir: string): void {
+export const initGlobalLogDir = (logDir: string): void => {
   globalOptions.logFilePath = generateLogFilePath(logDir)
 }
 
@@ -83,25 +84,25 @@ export const createLoggerProvider = (logDir: string): LoggerProvider => {
 }
 
 export interface Logger {
-  error(...msgs: any[]): void
-  warn(...msgs: any[]): void
-  info(...msgs: any[]): void
-  debug(...msgs: any[]): void
-  verbose(...msgs: any[]): void
-  log(level: LogLevel, ...msgs: any[]): void
+  error: (...msgs: any[]) => void
+  warn: (...msgs: any[]) => void
+  info: (...msgs: any[]) => void
+  debug: (...msgs: any[]) => void
+  verbose: (...msgs: any[]) => void
+  log: (level: LogLevel, ...msgs: any[]) => void
 }
 
-export function createLogger(channel?: string, logFile?: string): Logger {
-  return new LoggerImpl(channel, logFile)
+export const createLogger = (channel?: string): Logger => {
+  return new LoggerImpl(_globalProvider, channel)
 }
 
 class LoggerImpl implements Logger {
-  logFile?: string
   private readonly channel?: string
+  private readonly provider?: LoggerProviderImpl
 
-  constructor(channel?: string, logFile?: string) {
+  constructor(provider?: LoggerProviderImpl, channel?: string) {
+    this.provider = provider
     this.channel = channel
-    this.logFile = logFile
   }
 
   error = (...msgs: any[]): void => {
@@ -132,11 +133,10 @@ class LoggerImpl implements Logger {
     for (const entry of msgs) {
       logLine = appendLogEntry(logLine, entry)
     }
-
-    if (this.logFile) {
+    const provider = this.provider
+    if (provider?.logFile) {
       // Write to the global log file
-      fs.appendFileSync(this.logFile, logLine)
-      fs.appendFileSync(this.logFile, "\n")
+      fs.appendFileSync(provider.logFile, `${logLine}\n`)
     }
     const globalRequiredLevel = globalOptions.consoleOutputRequired?.level
     if (!globalRequiredLevel || level.level >= globalRequiredLevel) {
@@ -146,7 +146,7 @@ class LoggerImpl implements Logger {
   }
 }
 
-function appendLogEntry(origin: string, entry: any): string {
+const appendLogEntry = (origin: string, entry: any): string => {
   if (entry instanceof Error) {
     origin += `${entry.message} ${entry?.stack ?? ""}`
   } else {
@@ -155,6 +155,6 @@ function appendLogEntry(origin: string, entry: any): string {
   return origin
 }
 
-function tint(text: string, color?: ChalkInstance): string {
+const tint = (text: string, color?: ChalkInstance): string => {
   return color ? color(text) : text
 }
