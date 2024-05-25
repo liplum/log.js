@@ -1,12 +1,11 @@
 import fs from "fs"
 import path from "path"
 import { format } from "util"
-import { LogLevel, LogLevels, Tinter } from "./level"
+import { LogLevel, LogLevels, Tinter } from "./level.js"
 
 export interface LoggerProvider {
   createLogger: (channel?: string) => Logger
 }
-
 interface LoggerProviderOptions {
   logFile?: string
   consoleOutputRequired?: LogLevel
@@ -17,11 +16,19 @@ interface LoggerProviderOptions {
 class LoggerProviderImpl implements LoggerProvider, LoggerProviderOptions {
   logFile?: string
   consoleOutputRequired?: LogLevel
-  logFormat: LogFormat = formatMessages
-  entryFormat: EntryFormat = formatEntry
-  constructor(logFile?: string, consoleOutputRequired?: LogLevel) {
+  logFormat: LogFormat
+  entryFormat: EntryFormat
+  constructor({
+    logFile,
+    consoleOutputRequired,
+    logFormat,
+    entryFormat,
+  }: LoggerProviderOptions
+  ) {
     this.logFile = logFile
     this.consoleOutputRequired = consoleOutputRequired
+    this.logFormat = logFormat
+    this.entryFormat = entryFormat
   }
   createLogger = (channel?: string): Logger => {
     return new LoggerImpl(this, channel)
@@ -32,14 +39,29 @@ const generateLogFileName = (): string => {
   return `${new Date().toISOString().slice(0, 10)}.log`
 }
 
-export const createLoggerProvider = (
-  logDir: string,
-  getLogFileName: () => string = generateLogFileName,
-): LoggerProvider => {
-  fs.mkdirSync(logDir, { recursive: true })
-  return new LoggerProviderImpl(
-    path.join(logDir, getLogFileName())
-  )
+export const createLoggerProvider = (args?: {
+  logDir?: string,
+  getLogFileName: () => string,
+  consoleOutputRequired?: LogLevel
+  logFormat: LogFormat
+  entryFormat: EntryFormat
+}): LoggerProvider => {
+  const {
+    logDir,
+    getLogFileName = generateLogFileName,
+    consoleOutputRequired,
+    logFormat = formatMessages,
+    entryFormat = formatEntry,
+  } = args ?? {}
+  if (logDir) {
+    fs.mkdirSync(logDir, { recursive: true })
+  }
+  return new LoggerProviderImpl({
+    logFile: logDir ? path.join(logDir, getLogFileName()) : undefined,
+    consoleOutputRequired: consoleOutputRequired,
+    logFormat: logFormat,
+    entryFormat: entryFormat,
+  })
 }
 export type LazyLogging = () => any
 
@@ -119,7 +141,7 @@ class LoggerImpl implements Logger {
 const formatEntry: EntryFormat = (entry): string => {
   if (entry instanceof Error) {
     return `${entry.message} ${entry?.stack ?? ""}`
-  } else if(typeof entry === "function" && entry.length == 0){
+  } else if (typeof entry === "function" && entry.length == 0) {
     return formatEntry(entry())
   } else {
     return format(entry)
@@ -139,7 +161,10 @@ const tint = (text: string, color?: Tinter): string => {
   return color ? color(text) : text
 }
 
-export const globalProvider: LoggerProvider & LoggerProviderOptions = new LoggerProviderImpl()
+export const globalProvider: LoggerProvider & LoggerProviderOptions = new LoggerProviderImpl({
+  entryFormat: formatEntry,
+  logFormat: formatMessages
+})
 
 export const globalOptions: LoggerProviderOptions = globalProvider
 
