@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "strict": true,
     "noImplicitAny": false,
     "noEmitOnError": true,
     "declaration": true,

@@ -4,6 +4,20 @@ import chalk, { type ChalkInstance } from "chalk"
 import { format } from "util"
 export const colors = chalk
 
+export interface LoggerProvider {
+  createLogger: (channel?: string) => Logger
+}
+
+class LoggerProviderImpl implements LoggerProvider {
+  logFile?: string
+  constructor(logFile?: string) {
+    this.logFile = logFile
+  }
+  createLogger(channel?: string): Logger {
+    return new LoggerImpl(channel, this.logFile)
+  }
+}
+
 export interface LogLevel {
   signal: string
   level: number
@@ -34,20 +48,38 @@ export const LogLevels = {
   VERBOSE: createLogLevel("VERBOSE", 1),
 }
 
+
+const _globalLoggerProvider = new LoggerProviderImpl()
+
+export const globalLoggerProvider: LoggerProvider = _globalLoggerProvider
+
 export const globalOptions: {
   logFilePath?: string
   consoleOutputRequired?: LogLevel
 } = {
-  logFilePath: undefined,
+  get logFilePath(): string | undefined {
+    return _globalLoggerProvider.logFile
+  },
+  set logFilePath(path: string) {
+    _globalLoggerProvider.logFile = path
+  },
   consoleOutputRequired: undefined,
 }
 
-export function initGlobalLogDir(directory: string): void {
-  fs.mkdirSync(directory, { recursive: true })
-  globalOptions.logFilePath = path.join(
-    directory,
+const generateLogFilePath = (logDir:string):string=>{
+  fs.mkdirSync(logDir, { recursive: true })
+  return path.join(
+    logDir,
     `${new Date().toISOString().slice(0, 10)}.log`
   )
+}
+
+export function initGlobalLogDir(logDir: string): void {
+  globalOptions.logFilePath = generateLogFilePath(logDir)
+}
+
+export const createLoggerProvider = (logDir: string): LoggerProvider => {
+  return new LoggerProviderImpl(generateLogFilePath(logDir))
 }
 
 export interface Logger {
@@ -59,15 +91,17 @@ export interface Logger {
   log(level: LogLevel, ...msgs: any[]): void
 }
 
-export function createLogger(channel?: string): Logger {
-  return new LoggerImpl(channel)
+export function createLogger(channel?: string, logFile?: string): Logger {
+  return new LoggerImpl(channel, logFile)
 }
 
 class LoggerImpl implements Logger {
+  logFile?: string
   private readonly channel?: string
 
-  constructor(channel?: string) {
+  constructor(channel?: string, logFile?: string) {
     this.channel = channel
+    this.logFile = logFile
   }
 
   error = (...msgs: any[]): void => {
@@ -99,13 +133,13 @@ class LoggerImpl implements Logger {
       logLine = appendLogEntry(logLine, entry)
     }
 
-    if (globalOptions.logFilePath) {
+    if (this.logFile) {
       // Write to the global log file
-      fs.appendFileSync(globalOptions.logFilePath, logLine)
-      fs.appendFileSync(globalOptions.logFilePath, "\n")
+      fs.appendFileSync(this.logFile, logLine)
+      fs.appendFileSync(this.logFile, "\n")
     }
-
-    if (!globalOptions.consoleOutputRequired || level.level >= globalOptions.consoleOutputRequired.level) {
+    const globalRequiredLevel = globalOptions.consoleOutputRequired?.level
+    if (!globalRequiredLevel || level.level >= globalRequiredLevel) {
       // Write to the console for levels higher than the minimum required level
       console.log(tint(logLine, level.color))
     }
