@@ -24,17 +24,18 @@ class LoggerProviderImpl implements LoggerProvider, LoggerProviderOptions {
   }
 }
 
-const generateLogFilePath = (logDir: string): string => {
-  fs.mkdirSync(logDir, { recursive: true })
-  return path.join(
-    logDir,
-    `${new Date().toISOString().slice(0, 10)}.log`
-  )
+const generateLogFileName = (): string => {
+  return `${new Date().toISOString().slice(0, 10)}.log`
 }
 
-
-export const createLoggerProvider = (logDir: string): LoggerProvider => {
-  return new LoggerProviderImpl(generateLogFilePath(logDir))
+export const createLoggerProvider = (
+  logDir: string,
+  getLogFileName: () => string = generateLogFileName,
+): LoggerProvider => {
+  fs.mkdirSync(logDir, { recursive: true })
+  return new LoggerProviderImpl(
+    path.join(logDir, getLogFileName())
+  )
 }
 
 export interface Logger {
@@ -117,6 +118,10 @@ export const globalProvider: LoggerProvider & LoggerProviderOptions = new Logger
 
 export const globalOptions: LoggerProviderOptions = globalProvider
 
-export const initGlobalLogDir = (logDir: string): void => {
-  globalOptions.logFile = generateLogFilePath(logDir)
+export const initGlobalLogDir = (
+  logDir: string,
+  getLogFileName: () => string = generateLogFileName,
+): void => {
+  fs.mkdirSync(logDir, { recursive: true })
+  globalOptions.logFile = path.join(logDir, getLogFileName())
 }
