@@ -3,7 +3,6 @@ import path from "path"
 import { format } from "util"
 import { LogLevel, LogLevels, Tinter } from "./level"
 
-
 export interface LoggerProvider {
   createLogger: (channel?: string) => Logger
 }
@@ -42,14 +41,17 @@ export const createLoggerProvider = (
     path.join(logDir, getLogFileName())
   )
 }
+export type LazyLogging = () => any
+
+export type LogMessage = any | LazyLogging
 
 export interface Logger {
-  error: (...msgs: any[]) => void
-  warn: (...msgs: any[]) => void
-  info: (...msgs: any[]) => void
-  debug: (...msgs: any[]) => void
-  verbose: (...msgs: any[]) => void
-  log: (level: LogLevel, ...msgs: any[]) => void
+  error: (...msgs: LogMessage[]) => void
+  warn: (...msgs: LogMessage[]) => void
+  info: (...msgs: LogMessage[]) => void
+  debug: (...msgs: LogMessage[]) => void
+  verbose: (...msgs: LogMessage[]) => void
+  log: (level: LogLevel, ...msgs: LogMessage[]) => void
 }
 
 export const createLogger = (channel?: string): Logger => {
@@ -65,7 +67,8 @@ export type LogFormat = ({
   messages: string[]
 }) => string
 
-export type EntryFormat = (entry: any) => string
+export type EntryFormat = (entry: LogMessage) => string
+
 
 class LoggerImpl implements Logger {
   private readonly channel?: string
@@ -76,27 +79,27 @@ class LoggerImpl implements Logger {
     this.channel = channel
   }
 
-  error = (...msgs: any[]): void => {
+  error = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.ERROR, ...msgs)
   }
 
-  warn = (...msgs: any[]): void => {
+  warn = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.WARN, ...msgs)
   }
 
-  info = (...msgs: any[]): void => {
+  info = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.INFO, ...msgs)
   }
 
-  debug = (...msgs: any[]): void => {
+  debug = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.DEBUG, ...msgs)
   }
 
-  verbose = (...msgs: any[]): void => {
+  verbose = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.VERBOSE, ...msgs)
   }
 
-  log = (level: LogLevel, ...msgs: any[]): void => {
+  log = (level: LogLevel, ...msgs: LogMessage[]): void => {
     const time = new Date()
     const provider = this.provider
     const messages = msgs.map(msg => provider.entryFormat(msg))
@@ -116,6 +119,8 @@ class LoggerImpl implements Logger {
 const formatEntry: EntryFormat = (entry): string => {
   if (entry instanceof Error) {
     return `${entry.message} ${entry?.stack ?? ""}`
+  } else if(typeof entry === "function" && entry.length == 0){
+    return formatEntry(entry())
   } else {
     return format(entry)
   }
