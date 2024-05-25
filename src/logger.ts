@@ -3,6 +3,7 @@ import path from "path"
 import { format } from "util"
 import { LogLevel, LogLevels, Tinter } from "./level"
 
+
 export interface LoggerProvider {
   createLogger: (channel?: string) => Logger
 }
@@ -10,11 +11,15 @@ export interface LoggerProvider {
 interface LoggerProviderOptions {
   logFile?: string
   consoleOutputRequired?: LogLevel
+  logFormat: LogFormat
+  entryFormat: EntryFormat
 }
 
 class LoggerProviderImpl implements LoggerProvider, LoggerProviderOptions {
   logFile?: string
   consoleOutputRequired?: LogLevel
+  logFormat: LogFormat = formatMessages
+  entryFormat: EntryFormat = formatEntry
   constructor(logFile?: string, consoleOutputRequired?: LogLevel) {
     this.logFile = logFile
     this.consoleOutputRequired = consoleOutputRequired
@@ -51,11 +56,22 @@ export const createLogger = (channel?: string): Logger => {
   return new LoggerImpl(globalProvider, channel)
 }
 
+export type LogFormat = ({
+  time, level, channel, messages
+}: {
+  time: Date,
+  level: LogLevel,
+  channel?: string,
+  messages: string[]
+}) => string
+
+export type EntryFormat = (entry: any) => string
+
 class LoggerImpl implements Logger {
   private readonly channel?: string
-  private readonly provider?: LoggerProviderOptions
+  private readonly provider: LoggerProviderOptions
 
-  constructor(provider?: LoggerProviderOptions, channel?: string) {
+  constructor(provider: LoggerProviderOptions, channel?: string) {
     this.provider = provider
     this.channel = channel
   }
@@ -81,33 +97,37 @@ class LoggerImpl implements Logger {
   }
 
   log = (level: LogLevel, ...msgs: any[]): void => {
-    const timestamp = new Date().toISOString().slice(11, -2)
-    const channel = this.channel ? `[${this.channel}] ` : " "
-    let logLine = `|${timestamp}|${level.signal}|${channel}`
-
-    for (const entry of msgs) {
-      logLine = appendLogEntry(logLine, entry)
-    }
+    const time = new Date()
     const provider = this.provider
-    if (provider?.logFile) {
+    const messages = msgs.map(msg => provider.entryFormat(msg))
+    const line = provider.logFormat({ time, level, channel: this.channel, messages })
+    if (provider.logFile) {
       // Write to the global log file
-      fs.appendFileSync(provider.logFile, `${logLine}\n`)
+      fs.appendFileSync(provider.logFile, `${line}\n`)
     }
-    const consoleOutputRequired = provider?.consoleOutputRequired?.level
+    const consoleOutputRequired = provider.consoleOutputRequired?.level
     if (!consoleOutputRequired || level.level >= consoleOutputRequired) {
       // Write to the console for levels higher than the minimum required level
-      console.log(tint(logLine, level.color))
+      console.log(tint(line, level.color))
     }
   }
 }
 
-const appendLogEntry = (origin: string, entry: any): string => {
+const formatEntry: EntryFormat = (entry): string => {
   if (entry instanceof Error) {
-    origin += `${entry.message} ${entry?.stack ?? ""}`
+    return `${entry.message} ${entry?.stack ?? ""}`
   } else {
-    origin += format(entry)
+    return format(entry)
   }
-  return origin
+}
+
+const formatMessages: LogFormat = ({
+  time, level, channel, messages,
+}): string => {
+  const timestamp = time.toISOString().slice(11, -2)
+  channel = channel ? `[${channel}] ` : " "
+  let line = `|${timestamp}|${level.signal}|${channel}` + messages.join(", ")
+  return line
 }
 
 const tint = (text: string, color?: Tinter): string => {
