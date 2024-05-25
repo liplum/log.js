@@ -8,25 +8,29 @@ export interface LoggerProvider {
 }
 interface LoggerProviderOptions {
   logFile?: string
-  consoleOutputRequired?: LogLevel
+  consoleRequiredLevel?: LogLevel
+  fileRequiredLevel?: LogLevel
   logFormat: LogFormat
   entryFormat: EntryFormat
 }
 
 class LoggerProviderImpl implements LoggerProvider, LoggerProviderOptions {
   logFile?: string
-  consoleOutputRequired?: LogLevel
+  consoleRequiredLevel?: LogLevel
+  fileRequiredLevel?: LogLevel
   logFormat: LogFormat
   entryFormat: EntryFormat
   constructor({
     logFile,
-    consoleOutputRequired,
+    consoleRequiredLevel,
+    fileRequiredLevel,
     logFormat,
     entryFormat,
   }: LoggerProviderOptions
   ) {
     this.logFile = logFile
-    this.consoleOutputRequired = consoleOutputRequired
+    this.consoleRequiredLevel = consoleRequiredLevel
+    this.fileRequiredLevel = fileRequiredLevel
     this.logFormat = logFormat
     this.entryFormat = entryFormat
   }
@@ -42,14 +46,16 @@ const generateLogFileName = (): string => {
 export const createLoggerProvider = (args?: {
   logDir?: string,
   getLogFileName: () => string,
-  consoleOutputRequired?: LogLevel
+  consoleRequiredLevel?: LogLevel
+  fileRequiredLevel?: LogLevel
   logFormat: LogFormat
   entryFormat: EntryFormat
 }): LoggerProvider => {
   const {
     logDir,
     getLogFileName = generateLogFileName,
-    consoleOutputRequired,
+    consoleRequiredLevel,
+    fileRequiredLevel,
     logFormat = formatMessages,
     entryFormat = formatEntry,
   } = args ?? {}
@@ -58,9 +64,10 @@ export const createLoggerProvider = (args?: {
   }
   return new LoggerProviderImpl({
     logFile: logDir ? path.join(logDir, getLogFileName()) : undefined,
-    consoleOutputRequired: consoleOutputRequired,
-    logFormat: logFormat,
-    entryFormat: entryFormat,
+    consoleRequiredLevel,
+    fileRequiredLevel,
+    logFormat,
+    entryFormat,
   })
 }
 export type LazyLogging = () => any
@@ -122,20 +129,28 @@ class LoggerImpl implements Logger {
   }
 
   log = (level: LogLevel, ...msgs: LogMessage[]): void => {
-    const time = new Date()
     const provider = this.provider
+    const shouldLogConsole = shouldLog(level, provider.consoleRequiredLevel)
+    const shouldLogFile = provider.logFile && shouldLog(level, provider.fileRequiredLevel)
+    if (!shouldLogConsole && !shouldLogFile) return
+    const time = new Date()
     const messages = msgs.map(msg => provider.entryFormat(msg))
     const line = provider.logFormat({ time, level, channel: this.channel, messages })
-    if (provider.logFile) {
+    if (provider.logFile && shouldLogFile) {
       // Write to the global log file
       fs.appendFileSync(provider.logFile, `${line}\n`)
     }
-    const consoleOutputRequired = provider.consoleOutputRequired?.level
-    if (!consoleOutputRequired || level.level >= consoleOutputRequired) {
+    if (shouldLogConsole) {
       // Write to the console for levels higher than the minimum required level
       console.log(tint(line, level.color))
     }
   }
+}
+
+const shouldLog = (current: LogLevel, required?: LogLevel): boolean => {
+  const requiredLevel = required?.level
+  if (!requiredLevel) return true
+  return current.level >= requiredLevel
 }
 
 const formatEntry: EntryFormat = (entry): string => {
