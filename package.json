@@ -34,5 +34,6 @@
   "bugs": {
     "url": "https://github.com/liplum/log.js/issues"
   },
-  "homepage": "https://github.com/liplum/log.js#readme"
+  "homepage": "https://github.com/liplum/log.js#readme",
+  "packageManager": "pnpm@9.9.0"
 }
