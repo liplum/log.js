@@ -20,7 +20,7 @@ importers:
         version: 5.3.1
       typescript:
         specifier: ^5.1.6
-        version: 5.1.6
+        version: 5.5.4
 
 packages:
 
@@ -531,8 +531,8 @@ packages:
     resolution: {integrity: sha512-34R7HTnG0XIJcBSn5XhDd7nNFPRcXYRZrBB2O2jdKqYODldSzBAqzsWoZYYvduky73toYS/ESqxPvkDf/F0XMg==}
     engines: {node: '>=10'}
 
-  typescript@5.1.6:
-    resolution: {integrity: sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==}
+  typescript@5.5.4:
+    resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -1028,7 +1028,7 @@ snapshots:
 
   type-fest@0.13.1: {}
 
-  typescript@5.1.6: {}
+  typescript@5.5.4: {}
 
   well-known-symbols@2.0.0: {}
 
