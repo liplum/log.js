@@ -150,7 +150,7 @@ class LoggerImpl implements Logger {
 
 const formatMessage = (entry: any, formatter: EntryFormat): string => {
   if (entry instanceof AggregateError) {
-    return `${entry.message} ${entry.stack ?? ""} AggregatedErrors: ${entry.errors.map(it => formatter(it)).join("\n")}`
+    return `${entry.message} ${entry.stack ?? ""}\n AggregatedErrors: ${entry.errors.map(it => formatter(it)).join("\n")}`
   } else {
     return formatter(entry)
   }
