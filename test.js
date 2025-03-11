@@ -11,6 +11,16 @@ test('test logging', t => {
   t.pass()
 })
 
+test('test errors', t => {
+  const log = createLogger("Error")
+  log.error(new Error("Something was wrong"))
+  log.error(new AggregateError([
+    new Error("Error 1"),
+    new Error("Error 2"),
+  ]))
+  t.pass()
+})
+
 test('test logger provider', t => {
   const logProvider = createLoggerProvider()
   const log = logProvider.createLogger("Provider")

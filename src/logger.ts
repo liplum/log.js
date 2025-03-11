@@ -6,6 +6,7 @@ import { LogLevel, LogLevels, Tinter } from "./level.js"
 export interface LoggerProvider {
   createLogger: (channel?: string) => Logger
 }
+
 interface LoggerProviderOptions {
   logFile?: string
   consoleRequiredLevel?: LogLevel
@@ -134,7 +135,7 @@ class LoggerImpl implements Logger {
     const shouldLogFile = provider.logFile && shouldLog(level, provider.fileRequiredLevel)
     if (!shouldLogConsole && !shouldLogFile) return
     const time = new Date()
-    const messages = msgs.map(msg => provider.entryFormat(msg))
+    const messages = msgs.map(msg => formatMessage(msg, it => provider.entryFormat(it)))
     const line = provider.logFormat({ time, level, channel: this.channel, messages })
     if (provider.logFile && shouldLogFile) {
       // Write to the global log file
@@ -144,6 +145,14 @@ class LoggerImpl implements Logger {
       // Write to the console for levels higher than the minimum required level
       console.log(tint(line, level.color))
     }
+  }
+}
+
+const formatMessage = (entry: any, formatter: EntryFormat): string => {
+  if (entry instanceof AggregateError) {
+    return `${entry.message} ${entry.stack ?? ""} AggregatedErrors: ${entry.errors.map(it => formatter(it)).join("\n")}`
+  } else {
+    return formatter(entry)
   }
 }
 
@@ -178,7 +187,7 @@ const tint = (text: string, color?: Tinter): string => {
 
 export const globalProvider: LoggerProvider & LoggerProviderOptions = new LoggerProviderImpl({
   entryFormat: formatEntry,
-  logFormat: formatMessages
+  logFormat: formatMessages,
 })
 
 export const globalOptions: LoggerProviderOptions = globalProvider
