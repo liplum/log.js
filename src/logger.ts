@@ -175,7 +175,13 @@ const formatEntry: EntryFormat = (entry): string => {
 const formatMessages: LogFormat = ({
   time, level, channel, messages,
 }): string => {
-  const timestamp = time.toISOString().slice(11, -2)
+  const timestamp = time.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 2, // Milliseconds (2 digits)
+    hour12: false, // Use 24-hour format
+  })
   channel = channel ? `[${channel}] ` : " "
   let line = `|${timestamp}|${level.signal}|${channel}` + messages.join(", ")
   return line
