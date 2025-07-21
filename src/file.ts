@@ -9,20 +9,28 @@ export interface FileLogging {
   off: (target: LoggingTarget) => void
 }
 
-const generateDefaultLogFileName = (): string => {
+export type LogFileNameResolver = (args: {
+  id: string
+  logger: Logger
+  level: LogLevel
+  time: Date
+  channel?: string
+}) => string
+
+/**
+ * Generates a default log file name based on the current date.
+ * The format is `YYYY-MM-DD.log`, which creates a new log file for each day.
+ * For example, if today is October 1, 2023, the log file name will be `2023-10-01.log`.
+ * This function is used to create a new log file for each day, ensuring that logs are organized by date.
+ */
+const generateDefaultLogFileName: LogFileNameResolver = () => {
   return `${new Date().toISOString().slice(0, 10)}.log`
 }
 
 export const createFileLogging = (args: {
   logLevels?: string[],
   logDir: string,
-  resolveLogFileName?: (args: {
-    id: string
-    logger: Logger
-    level: LogLevel
-    time: Date
-    channel?: string
-  }) => string,
+  resolveLogFileName?: LogFileNameResolver,
 }): FileLogging => {
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
   const {
