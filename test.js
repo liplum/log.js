@@ -1,5 +1,5 @@
 import test from 'ava'
-import { createConsoleLogging, createLogger, createLoggerProvider, globalLoggerProvider } from "./dist/index.js"
+import { createConsoleLogging, createLogger, createLoggerProvider } from "./dist/index.js"
 
 test('test logging', t => {
   const log = createLogger("Main")
@@ -49,7 +49,7 @@ test('test logger provider', t => {
   t.pass()
 })
 
-test('test logger provider with args', t => {
+test('test logger provider with config', t => {
   const logProvider = createLoggerProvider({
     entryFormat: () => "test",
   })
@@ -99,10 +99,6 @@ test('test logger provider events', t => {
 
 
 test('test global logging', t => {
-  const consoleLogging = createConsoleLogging({
-    logLevels: ["INFO", "WARN", "ERROR"]
-  })
-  consoleLogging.on(globalLoggerProvider)
   const logA = createLogger("GlobalA")
   const logB = createLogger("GlobalB")
   logA.info("hello, world!")
@@ -116,6 +112,5 @@ test('test global logging', t => {
   logB.error("hello, error!")
   logB.verbose("hello, hello, hello!")
   logB.debug("hello, bug!")
-  consoleLogging.off(globalLoggerProvider)
   t.pass()
 })

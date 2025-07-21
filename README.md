@@ -78,29 +78,6 @@ logB.debug("hello, bug!")
 consoleLogging.off(logProvider)
 ```
 
-You can also create a global logger provider with `globalLoggerProvider`, which can manage multiple loggers globally.
-
-```js
-const consoleLogging = createConsoleLogging({
-  logLevels: ["INFO", "WARN", "ERROR"]
-})
-consoleLogging.on(globalLoggerProvider)
-const logA = createLogger("GlobalA")
-const logB = createLogger("GlobalB")
-logA.info("hello, world!")
-logA.warn("hello, warning!")
-logA.error("hello, error!")
-logA.verbose("hello, hello, hello!")
-logA.debug("hello, bug!")
-
-logB.info("hello, world!")
-logB.warn("hello, warning!")
-logB.error("hello, error!")
-logB.verbose("hello, hello, hello!")
-logB.debug("hello, bug!")
-consoleLogging.off(globalLoggerProvider)
-```
-
 ### Logger events
 
 The loggers can emit events like `log` when a log message comes out.
