@@ -1,6 +1,8 @@
 export {
   Logger,
   LogMessage,
+  LazyLogging,
+  LoggerEventLogPayload,
 } from "./logger.js"
 
 export {
@@ -11,8 +13,20 @@ export {
 export * from "./level.js"
 
 export {
-  initGlobalLogDir,
   createLogger,
-  globalOptions,
-  globalProvider,
+  globalLoggerProvider,
 } from "./global.js"
+
+export {
+  createConsoleLogging,
+} from "./console.js"
+
+export {
+  createFileLogging,
+} from "./file.js"
+
+export {
+  LoggingTarget,
+  LoggingTargetEvent,
+  LoggingTargetEventLogPayload,
+} from "./listener.js"

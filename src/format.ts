@@ -42,6 +42,6 @@ export const formatMessages: LogFormat = ({
     hour12: false, // Use 24-hour format
   })
   channel = channel ? `[${channel}] ` : " "
-  let line = `|${timestamp}|${level.signal}|${channel}` + messages.join(", ")
+  let line = `|${timestamp}|${level}|${channel}` + messages.join(", ")
   return line
 }
