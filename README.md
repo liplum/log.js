@@ -27,7 +27,7 @@ log.debug("hello, bug!")
 - [ ] Configuration
 - [x] Custom log levels
 - [x] Logger events
-- [ ] Logging to console and file
+- [x] Logging to console and file
 - [ ] Sub-level logger
 
 ### Configuration
@@ -39,6 +39,69 @@ LogLevel is customizable.
 ### Logging to console and file [WIP]
 
 The log messages can be output into console and file with logger level filter.
+
+You can create a console logger with `createConsoleLogging` function.
+
+```js
+const log = createLogger("Main")
+const consoleLogging = createConsoleLogging({
+  logLevels: ["INFO", "WARN", "ERROR"]
+})
+consoleLogging.on(log)
+log.info("hello, world!")
+log.warn("hello, warning!")
+log.error("hello, error!")
+log.verbose("hello, hello, hello!")
+log.debug("hello, bug!")
+consoleLogging.off(log)
+```
+
+You can also create a log provider with `createLoggerProvider` function, which can manage multiple loggers.
+
+```js
+const logProvider = createLoggerProvider()
+const consoleLogging = createConsoleLogging({
+  logLevels: ["INFO", "WARN", "ERROR"]
+})
+consoleLogging.on(logProvider)
+const logA = logProvider.createLogger("ProviderA")
+const logB = logProvider.createLogger("ProviderB")
+logA.info("hello, world!")
+logA.warn("hello, warning!")
+logA.error("hello, error!")
+logA.verbose("hello, hello, hello!")
+logA.debug("hello, bug!")
+
+logB.info("hello, world!")
+logB.warn("hello, warning!")
+logB.error("hello, error!")
+logB.verbose("hello, hello, hello!")
+logB.debug("hello, bug!")
+consoleLogging.off(logProvider)
+```
+
+You can also create a global logger provider with `globalLoggerProvider`, which can manage multiple loggers globally.
+
+```js
+const consoleLogging = createConsoleLogging({
+  logLevels: ["INFO", "WARN", "ERROR"]
+})
+consoleLogging.on(globalLoggerProvider)
+const logA = createLogger("GlobalA")
+const logB = createLogger("GlobalB")
+logA.info("hello, world!")
+logA.warn("hello, warning!")
+logA.error("hello, error!")
+logA.verbose("hello, hello, hello!")
+logA.debug("hello, bug!")
+
+logB.info("hello, world!")
+logB.warn("hello, warning!")
+logB.error("hello, error!")
+logB.verbose("hello, hello, hello!")
+logB.debug("hello, bug!")
+consoleLogging.off(globalLoggerProvider)
+```
 
 ### Logger events
 
