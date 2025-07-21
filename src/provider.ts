@@ -4,6 +4,7 @@ import { LogLevel } from "./level.js"
 import { Logger, LoggerEventLogPayload, LoggerImpl } from "./logger.js"
 import fs from "fs"
 import path from "path"
+import { ConsoleLogging } from "./console.js"
 
 export type LoggerProviderEventLoggerCreatedPayload = {
   id: string
@@ -33,19 +34,25 @@ export interface LoggerProvider extends EventEmitter {
 
 export interface LoggerProviderOptions {
   logFile?: string
-  consoleRequiredLevel?: LogLevel
   fileRequiredLevel?: LogLevel
   logFormat: LogFormat
   entryFormat: EntryFormat
 }
 
+export interface LoggerProviderUtils {
+  consoleLogging?: ConsoleLogging
+}
+
 export class LoggerProviderImpl extends EventEmitter implements LoggerProvider {
   readonly options: LoggerProviderOptions
+  private readonly utils: LoggerProviderUtils
 
-  constructor(options: LoggerProviderOptions) {
+  constructor(options: LoggerProviderOptions, utils: LoggerProviderUtils) {
     super()
     this.options = options
+    this.utils = utils
   }
+
   createLogger = (channel?: string): Logger => {
     const logger = new LoggerImpl(this, channel)
     this.emit("logger-created", {
@@ -54,6 +61,13 @@ export class LoggerProviderImpl extends EventEmitter implements LoggerProvider {
       channel,
       time: new Date(),
     })
+    const consoleLogging = this.utils.consoleLogging
+    if (consoleLogging) {
+      consoleLogging.on(logger)
+      logger.on("close", () => {
+        consoleLogging.off(logger)
+      })
+    }
     return logger
   }
 }
@@ -73,7 +87,6 @@ export const createLoggerProvider = (args?: {
   const {
     logDir,
     getLogFileName = generateLogFileName,
-    consoleRequiredLevel,
     fileRequiredLevel,
     logFormat = formatMessages,
     entryFormat = formatEntry,
@@ -83,9 +96,10 @@ export const createLoggerProvider = (args?: {
   }
   return new LoggerProviderImpl({
     logFile: logDir ? path.join(logDir, getLogFileName()) : undefined,
-    consoleRequiredLevel,
     fileRequiredLevel,
     logFormat,
     entryFormat,
+  }, {
+
   })
 }
