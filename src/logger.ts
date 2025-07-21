@@ -2,8 +2,8 @@ import fs from "fs"
 import path from "path"
 import { format } from "util"
 import { LogLevel, LogLevels, Tinter } from "./level.js"
-import { EventEmitter } from "stream"
 import { v7 as uuidv7 } from "uuid"
+import EventEmitter from "events"
 
 export interface LoggerProvider {
   createLogger: (channel?: string) => Logger

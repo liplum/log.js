@@ -45,3 +45,16 @@ test('test logger provider with args', t => {
   log.debug("hello, bug!")
   t.pass()
 })
+
+test('test logger events', t => {
+  const log = createLogger("Main")
+  log.on("log", (result)=>{
+    console.log(result)
+  })
+  log.info("hello, world!")
+  log.warn("hello, warning!")
+  log.error("hello, error!")
+  log.verbose("hello, hello, hello!")
+  log.debug("hello, bug!")
+  t.pass()
+})
