@@ -25,15 +25,22 @@ log.debug("hello, bug!")
 ## Features
 
 - [ ] Configuration
-- [ ] Custom log levels
-- [ ] Logger events
+- [x] Custom log levels
+- [x] Logger events
+- [ ] Logging to console and file
 - [ ] Sub-level logger
 
 ### Configuration
 
-### Custom log levels [WIP]
+### Custom log levels
 
-### Logger events [WIP]
+LogLevel is customizable.
+
+### Logging to console and file [WIP]
+
+The log messages can be output into console and file with logger level filter.
+
+### Logger events
 
 The loggers can emit events like `log` when a log message comes out.
 
