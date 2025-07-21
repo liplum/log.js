@@ -26,15 +26,19 @@ log.debug("hello, bug!")
 
 - [ ] Configuration
 - [ ] Custom log levels
-- [ ] Log events
+- [ ] Logger events
 - [ ] Sub-level logger
 
 ### Configuration
 
 ### Custom log levels [WIP]
 
-### Log events [WIP]
+### Logger events [WIP]
 
 The loggers can emit events like `log` when a log message comes out.
+
+The Logger emits `log` event when a message is logged on it.
+
+The LogProvider emits `log` .
 
 ### Sub-level logger [WIP]
