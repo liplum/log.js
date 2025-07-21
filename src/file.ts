@@ -1,5 +1,5 @@
 import fs from "fs"
-import { LoggingTarget, LoggingTargetEventLogPayload } from "./listener.js"
+import { LoggingTarget, LoggingTargetEventPayload, } from "./listener.js"
 import path from "path"
 import { Logger } from "./logger.js"
 import { LogLevel } from "./level.js"
@@ -30,10 +30,10 @@ export const createFileLogging = (args: {
     resolveLogFileName = generateDefaultLogFileName
   } = args
 
-  const id2Listener = new Map<string, (payload: LoggingTargetEventLogPayload) => void>()
+  const id2Listener = new Map<string, (payload: LoggingTargetEventPayload) => void>()
   return {
     on: (target: LoggingTarget): void => {
-      const listener = async ({ message, level, ...args }: LoggingTargetEventLogPayload) => {
+      const listener = async ({ message, level, ...args }: LoggingTargetEventPayload) => {
         // Check if the log level is in the specified log levels
         // If no log levels are specified, log everything
         // If logLevels is specified, only log messages with levels in that array

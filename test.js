@@ -1,5 +1,5 @@
 import test from 'ava'
-import { LogLevels, createConsoleLogging, createLogger, createLoggerProvider, globalLoggerProvider } from "./dist/index.js"
+import { createConsoleLogging, createLogger, createLoggerProvider, globalLoggerProvider } from "./dist/index.js"
 
 test('test logging', t => {
   const log = createLogger("Main")
@@ -52,14 +52,18 @@ test('test logger provider', t => {
 test('test logger provider with args', t => {
   const logProvider = createLoggerProvider({
     entryFormat: () => "test",
-    consoleRequiredLevel: LogLevels.INFO,
   })
+  const consoleLogging = createConsoleLogging({
+    logLevels: ["INFO",]
+  })
+  consoleLogging.on(logProvider)
   const log = logProvider.createLogger("Provider+Args")
   log.info("hello, world!")
   log.warn("hello, warning!")
   log.error("hello, error!")
   log.verbose("hello, hello, hello!")
   log.debug("hello, bug!")
+  consoleLogging.off(logProvider)
   t.pass()
 })
 

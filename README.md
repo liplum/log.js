@@ -38,7 +38,7 @@ You can define your own log levels in a string.
 
 ```js
 
-### Logging to console and file [WIP]
+### Logging to console and file
 
 The log messages can be output into console and file with logger level filter.
 

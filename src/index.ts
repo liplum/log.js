@@ -30,6 +30,5 @@ export {
 
 export {
   LoggingTarget,
-  LoggingTargetEvent,
-  LoggingTargetEventLogPayload,
+  LoggingTargetEventPayload,
 } from "./listener.js"

@@ -1,5 +1,5 @@
 import { LogLevel } from "./level.js"
-import { LoggingTarget, LoggingTargetEventLogPayload } from "./listener.js"
+import { LoggingTarget, LoggingTargetEventPayload } from "./listener.js"
 import chalk from "chalk"
 
 export type Tinter = (...text: any[]) => string
@@ -30,10 +30,10 @@ export const createConsoleLogging = (args?: {
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
   const tinterResolver = args?.tinterResolver || baseTinterResolver
 
-  const id2Listener = new Map<string, (payload: LoggingTargetEventLogPayload) => void>()
+  const id2Listener = new Map<string, (payload: LoggingTargetEventPayload) => void>()
   return {
     on: (target: LoggingTarget): void => {
-      const listener = ({ message, level }: LoggingTargetEventLogPayload) => {
+      const listener = ({ message, level }: LoggingTargetEventPayload) => {
         // Check if the log level is in the specified log levels
         // If no log levels are specified, log everything
         // If logLevels is specified, only log messages with levels in that array
