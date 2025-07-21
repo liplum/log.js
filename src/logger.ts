@@ -78,7 +78,6 @@ export class LoggerImpl extends EventEmitter implements Logger {
     const options = provider.options
     const shouldLogConsole = shouldLog(level, options.consoleRequiredLevel)
     const shouldLogFile = options.logFile && shouldLog(level, options.fileRequiredLevel)
-    if (!shouldLogConsole && !shouldLogFile) return
     const time = new Date()
     const messages = msgs.map(msg => formatMessage(msg, it => options.entryFormat(it)))
     const line = options.logFormat({ time, level, channel: this.channel, messages })
