@@ -15,7 +15,8 @@
   "author": "Liplum",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^5.4.1"
+    "chalk": "^5.4.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",

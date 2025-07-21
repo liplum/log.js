@@ -1,112 +1,56 @@
 import fs from "fs"
-import path from "path"
-import { format } from "util"
 import { LogLevel, LogLevels, Tinter } from "./level.js"
+import { v7 as uuidv7 } from "uuid"
+import EventEmitter from "events"
+import { EntryFormat, formatMessage } from "./format.js"
+import { LoggerProvider } from "./provider.js"
 
-export interface LoggerProvider {
-  createLogger: (channel?: string) => Logger
-}
-
-interface LoggerProviderOptions {
-  logFile?: string
-  consoleRequiredLevel?: LogLevel
-  fileRequiredLevel?: LogLevel
-  logFormat: LogFormat
-  entryFormat: EntryFormat
-}
-
-class LoggerProviderImpl implements LoggerProvider, LoggerProviderOptions {
-  logFile?: string
-  consoleRequiredLevel?: LogLevel
-  fileRequiredLevel?: LogLevel
-  logFormat: LogFormat
-  entryFormat: EntryFormat
-  constructor({
-    logFile,
-    consoleRequiredLevel,
-    fileRequiredLevel,
-    logFormat,
-    entryFormat,
-  }: LoggerProviderOptions
-  ) {
-    this.logFile = logFile
-    this.consoleRequiredLevel = consoleRequiredLevel
-    this.fileRequiredLevel = fileRequiredLevel
-    this.logFormat = logFormat
-    this.entryFormat = entryFormat
-  }
-  createLogger = (channel?: string): Logger => {
-    return new LoggerImpl(this, channel)
-  }
-}
-
-const generateLogFileName = (): string => {
-  return `${new Date().toISOString().slice(0, 10)}.log`
-}
-
-export const createLoggerProvider = (args?: {
-  logDir?: string,
-  getLogFileName: () => string,
-  consoleRequiredLevel?: LogLevel
-  fileRequiredLevel?: LogLevel
-  logFormat: LogFormat
-  entryFormat: EntryFormat
-}): LoggerProvider => {
-  const {
-    logDir,
-    getLogFileName = generateLogFileName,
-    consoleRequiredLevel,
-    fileRequiredLevel,
-    logFormat = formatMessages,
-    entryFormat = formatEntry,
-  } = args ?? {}
-  if (logDir) {
-    fs.mkdirSync(logDir, { recursive: true })
-  }
-  return new LoggerProviderImpl({
-    logFile: logDir ? path.join(logDir, getLogFileName()) : undefined,
-    consoleRequiredLevel,
-    fileRequiredLevel,
-    logFormat,
-    entryFormat,
-  })
-}
 export type LazyLogging = () => any
 
 export type LogMessage = any | LazyLogging
 
-export interface Logger {
+export type LoggerEventLogPayload = {
+  id: string
+  logger: Logger
+  level: LogLevel
+  rawMessages: LogMessage[]
+  message: string
+  time: Date
+  channel?: string
+}
+
+export type LoggerEvent = "log"
+
+export type LoggerEventPayload<T extends LoggerEvent> =
+  T extends "log" ? (LoggerEventLogPayload) :
+  never
+
+export interface Logger extends EventEmitter {
+  readonly id: string
+  readonly channel?: string
+
   error: (...msgs: LogMessage[]) => void
   warn: (...msgs: LogMessage[]) => void
   info: (...msgs: LogMessage[]) => void
   debug: (...msgs: LogMessage[]) => void
   verbose: (...msgs: LogMessage[]) => void
   log: (level: LogLevel, ...msgs: LogMessage[]) => void
+
+  on<T extends LoggerEvent>(event: T, listener: (payload: LoggerEventPayload<T>) => void): this
+  off<T extends LoggerEvent>(event: T, listener: (payload: LoggerEventPayload<T>) => void): this
+  emit<T extends LoggerEvent>(event: T, payload: LoggerEventPayload<T>): boolean
 }
 
-export const createLogger = (channel?: string): Logger => {
-  return new LoggerImpl(globalProvider, channel)
-}
+export class LoggerImpl extends EventEmitter implements Logger {
+  readonly id: string
+  readonly channel?: string
+  private readonly provider: LoggerProvider
 
-export type LogFormat = ({
-  time, level, channel, messages
-}: {
-  time: Date,
-  level: LogLevel,
-  channel?: string,
-  messages: string[]
-}) => string
-
-export type EntryFormat = (entry: LogMessage) => string
-
-
-class LoggerImpl implements Logger {
-  private readonly channel?: string
-  private readonly provider: LoggerProviderOptions
-
-  constructor(provider: LoggerProviderOptions, channel?: string) {
+  constructor(provider: LoggerProvider, channel?: string) {
+    super()
     this.provider = provider
     this.channel = channel
+    this.id = uuidv7()
   }
 
   error = (...msgs: LogMessage[]): void => {
@@ -131,15 +75,26 @@ class LoggerImpl implements Logger {
 
   log = (level: LogLevel, ...msgs: LogMessage[]): void => {
     const provider = this.provider
-    const shouldLogConsole = shouldLog(level, provider.consoleRequiredLevel)
-    const shouldLogFile = provider.logFile && shouldLog(level, provider.fileRequiredLevel)
-    if (!shouldLogConsole && !shouldLogFile) return
+    const options = provider.options
+    const shouldLogConsole = shouldLog(level, options.consoleRequiredLevel)
+    const shouldLogFile = options.logFile && shouldLog(level, options.fileRequiredLevel)
     const time = new Date()
-    const messages = msgs.map(msg => formatMessage(msg, it => provider.entryFormat(it)))
-    const line = provider.logFormat({ time, level, channel: this.channel, messages })
-    if (provider.logFile && shouldLogFile) {
+    const messages = msgs.map(msg => formatMessage(msg, it => options.entryFormat(it)))
+    const line = options.logFormat({ time, level, channel: this.channel, messages })
+    const payload: LoggerEventLogPayload = {
+      id: uuidv7(),
+      logger: this,
+      level,
+      rawMessages: msgs,
+      message: line,
+      time,
+      channel: this.channel,
+    }
+    this.emit("log", payload)
+    this.provider.emit("log", payload)
+    if (options.logFile && shouldLogFile) {
       // Write to the global log file
-      fs.appendFileSync(provider.logFile, `${line}\n`)
+      fs.appendFileSync(options.logFile, `${line}\n`)
     }
     if (shouldLogConsole) {
       // Write to the console for levels higher than the minimum required level
@@ -148,60 +103,11 @@ class LoggerImpl implements Logger {
   }
 }
 
-const formatMessage = (entry: any, formatter: EntryFormat): string => {
-  if (entry instanceof AggregateError) {
-    return `${entry.message} ${entry.stack ?? ""}\n AggregatedErrors: ${entry.errors.map(it => formatter(it)).join("\n")}`
-  } else {
-    return formatter(entry)
-  }
-}
-
 const shouldLog = (current: LogLevel, required?: LogLevel): boolean => {
   const requiredLevel = required?.level
   if (!requiredLevel) return true
   return current.level >= requiredLevel
 }
-
-const formatEntry: EntryFormat = (entry): string => {
-  if (entry instanceof Error) {
-    return `${entry.message} ${entry?.stack ?? ""}`
-  } else if (typeof entry === "function" && entry.length == 0) {
-    return formatEntry(entry())
-  } else {
-    return format(entry)
-  }
-}
-
-const formatMessages: LogFormat = ({
-  time, level, channel, messages,
-}): string => {
-  const timestamp = time.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    fractionalSecondDigits: 2, // Milliseconds (2 digits)
-    hour12: false, // Use 24-hour format
-  })
-  channel = channel ? `[${channel}] ` : " "
-  let line = `|${timestamp}|${level.signal}|${channel}` + messages.join(", ")
-  return line
-}
-
 const tint = (text: string, color?: Tinter): string => {
   return color ? color(text) : text
-}
-
-export const globalProvider: LoggerProvider & LoggerProviderOptions = new LoggerProviderImpl({
-  entryFormat: formatEntry,
-  logFormat: formatMessages,
-})
-
-export const globalOptions: LoggerProviderOptions = globalProvider
-
-export const initGlobalLogDir = (
-  logDir: string,
-  getLogFileName: () => string = generateLogFileName,
-): void => {
-  fs.mkdirSync(logDir, { recursive: true })
-  globalOptions.logFile = path.join(logDir, getLogFileName())
 }
