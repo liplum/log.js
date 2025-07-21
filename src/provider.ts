@@ -18,11 +18,11 @@ export type LoggerProviderEventPayload<T extends LoggerProviderEvent> =
   T extends "logger-created" ? (LoggerProviderEventLoggerCreatedPayload) :
   never
 
-
 export interface LoggerProvider extends EventEmitter {
   createLogger: (channel?: string) => Logger
 
   on<T extends LoggerProviderEvent>(event: T, listener: (payload: LoggerProviderEventPayload<T>) => void): this
+  off<T extends LoggerProviderEvent>(event: T, listener: (payload: LoggerProviderEventPayload<T>) => void): this
   emit<T extends LoggerProviderEvent>(event: T, payload: LoggerProviderEventPayload<T>): boolean
 }
 

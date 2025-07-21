@@ -36,6 +36,7 @@ export interface Logger extends EventEmitter {
   log: (level: LogLevel, ...msgs: LogMessage[]) => void
 
   on<T extends LoggerEvent>(event: T, listener: (payload: LoggerEventPayload<T>) => void): this
+  off<T extends LoggerEvent>(event: T, listener: (payload: LoggerEventPayload<T>) => void): this
   emit<T extends LoggerEvent>(event: T, payload: LoggerEventPayload<T>): boolean
 }
 
