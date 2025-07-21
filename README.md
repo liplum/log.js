@@ -49,7 +49,7 @@ The Logger emits `log` event when a message is logged on it.
 ```js
 const log = createLogger("Main")
 log.on("log", (e) => {
-  console.log("!Log!", e.id, e.channel, e.level.signal, e.message)
+  console.log("!Log!", e.id, e.channel, e.level, e.message)
 })
 log.info("hello, world!")
 log.warn("hello, warning!")
@@ -66,7 +66,7 @@ logProvider.on("logger-created", (e) => {
   console.log("!Logger Created!", e.id, e.channel)
 })
 logProvider.on("log", (e) => {
-  console.log("!Log!", e.id, e.channel, e.level.signal, e.message)
+  console.log("!Log!", e.id, e.channel, e.level, e.message)
 })
 const log = logProvider.createLogger("Provider")
 log.info("hello, world!")

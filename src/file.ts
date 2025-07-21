@@ -37,7 +37,7 @@ export const createFileLogging = (args: {
         // Check if the log level is in the specified log levels
         // If no log levels are specified, log everything
         // If logLevels is specified, only log messages with levels in that array
-        if (logLevels && !logLevels.includes(level.signal)) return
+        if (logLevels && !logLevels.includes(level)) return
 
         await fs.promises.mkdir(logDir, { recursive: true })
 

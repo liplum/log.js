@@ -1,5 +1,22 @@
-import { Tinter } from "./level.js"
+import { LogLevel } from "./level.js"
 import { LoggingTarget, LoggingTargetEventLogPayload } from "./listener.js"
+import chalk from "chalk"
+
+export type Tinter = (...text: any[]) => string
+
+export type TinterResolver = (level: LogLevel) => Tinter | undefined
+
+export const LogLevels = {
+  ERROR: chalk.bold.red,
+  WARN: chalk.yellow,
+  INFO: chalk.green,
+  DEBUG: chalk.blue,
+  VERBOSE: undefined,
+}
+
+const baseTinterResolver: TinterResolver = (level) => {
+  return LogLevels[level.toLocaleUpperCase()]
+}
 
 export interface ConsoleLogging {
   on: (target: LoggingTarget) => void
@@ -8,8 +25,10 @@ export interface ConsoleLogging {
 
 export const createConsoleLogging = (args?: {
   logLevels?: string[],
+  tinterResolver?: TinterResolver,
 }): ConsoleLogging => {
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
+  const tinterResolver = args?.tinterResolver || baseTinterResolver
 
   const id2Listener = new Map<string, (payload: LoggingTargetEventLogPayload) => void>()
   return {
@@ -18,9 +37,10 @@ export const createConsoleLogging = (args?: {
         // Check if the log level is in the specified log levels
         // If no log levels are specified, log everything
         // If logLevels is specified, only log messages with levels in that array
-        if (logLevels && !logLevels.includes(level.signal)) return
+        if (logLevels && !logLevels.includes(level.toLocaleUpperCase())) return
 
-        console.log(tint(message, level.color))
+        const tinter = tinterResolver(level)
+        console.log(tint(message, tinter))
       }
       id2Listener.set(target.id, listener)
       target.on("log", listener)
