@@ -21,3 +21,20 @@ log.error("hello, error!")
 log.verbose("hello, hello, hello!")
 log.debug("hello, bug!")
 ```
+
+## Features
+
+- [ ] Configuration
+- [ ] Custom log levels
+- [ ] Log events
+- [ ] Sub-level logger
+
+### Configuration
+
+### Custom log levels [WIP]
+
+### Log events [WIP]
+
+The loggers can emit events like `log` when a log message comes out.
+
+### Sub-level logger [WIP]
