@@ -24,19 +24,15 @@ log.debug("hello, bug!")
 
 ## Features
 
-- [ ] Configuration
+- [x] Configuration
 - [x] Custom log levels
 - [x] Logger events
 - [x] Logging to console and file
 - [ ] Sub-level logger
 
-### Configuration
-
 ### Custom log levels
 
 You can define your own log levels in a string.
-
-```js
 
 ### Logging to console and file
 
@@ -140,5 +136,3 @@ log.error("hello, error!")
 log.verbose("hello, hello, hello!")
 log.debug("hello, bug!")
 ```
-
-### Sub-level logger [WIP]
