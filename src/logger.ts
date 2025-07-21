@@ -1,5 +1,4 @@
 import { LogLevel, LogLevels } from "./level.js"
-import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
 import { EntryFormat, formatMessage } from "./format.js"
 import { LoggerProvider } from "./provider.js"
@@ -52,7 +51,7 @@ export class LoggerImpl extends EventEmitter implements Logger {
     super()
     this.provider = provider
     this.channel = channel
-    this.id = uuidv7()
+    this.id = crypto.randomUUID()
   }
 
   error = (...msgs: LogMessage[]): void => {
@@ -82,7 +81,7 @@ export class LoggerImpl extends EventEmitter implements Logger {
     const messages = msgs.map(msg => formatMessage(msg, it => options.entryFormat(it)))
     const line = options.logFormat({ time, level, channel: this.channel, messages })
     const payload: LoggerEventLogPayload = {
-      id: uuidv7(),
+      id: crypto.randomUUID(),
       logger: this,
       level,
       rawMessages: msgs,

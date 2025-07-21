@@ -1,7 +1,6 @@
 import EventEmitter from "events"
 import { LogFormat, EntryFormat, formatEntry, formatMessages } from "./format.js"
 import { Logger, LoggerEventLogPayload, LoggerImpl } from "./logger.js"
-import { v7 as uuidv7 } from "uuid"
 
 export type LoggerProviderEventLoggerCreatedPayload = {
   id: string
@@ -41,7 +40,7 @@ export class LoggerProviderImpl extends EventEmitter implements LoggerProvider {
 
   constructor(options: LoggerProviderOptions) {
     super()
-    this.id = uuidv7()
+    this.id = crypto.randomUUID()
     this.options = options
   }
 
