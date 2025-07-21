@@ -1,13 +1,18 @@
 import test from 'ava'
-import { LogLevels, createLogger, createLoggerProvider } from "./dist/index.js"
+import { LogLevels, createConsoleLogging, createLogger, createLoggerProvider } from "./dist/index.js"
 
 test('test logging', t => {
   const log = createLogger("Main")
+  const consoleLogging = createConsoleLogging({
+    logLevels: ["INFO", "WARN", "ERROR"]
+  })
+  consoleLogging.on(log)
   log.info("hello, world!")
   log.warn("hello, warning!")
   log.error("hello, error!")
   log.verbose("hello, hello, hello!")
   log.debug("hello, bug!")
+  consoleLogging.off(log)
   t.pass()
 })
 

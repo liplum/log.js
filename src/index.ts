@@ -16,3 +16,11 @@ export {
   globalOptions,
   globalProvider,
 } from "./global.js"
+
+export {
+  createConsoleLogging,
+} from "./console.js"
+
+export {
+  createFileLogging,
+} from "./file.js"

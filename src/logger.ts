@@ -1,5 +1,5 @@
 import fs from "fs"
-import { LogLevel, LogLevels, Tinter } from "./level.js"
+import { LogLevel, LogLevels } from "./level.js"
 import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
 import { EntryFormat, formatMessage } from "./format.js"
@@ -96,10 +96,6 @@ export class LoggerImpl extends EventEmitter implements Logger {
       // Write to the global log file
       fs.appendFileSync(options.logFile, `${line}\n`)
     }
-    if (shouldLogConsole) {
-      // Write to the console for levels higher than the minimum required level
-      console.log(tint(line, level.color))
-    }
   }
 }
 
@@ -107,7 +103,4 @@ const shouldLog = (current: LogLevel, required?: LogLevel): boolean => {
   const requiredLevel = required?.level
   if (!requiredLevel) return true
   return current.level >= requiredLevel
-}
-const tint = (text: string, color?: Tinter): string => {
-  return color ? color(text) : text
 }
