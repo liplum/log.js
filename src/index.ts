@@ -13,10 +13,8 @@ export {
 export * from "./level.js"
 
 export {
-  initGlobalLogDir,
   createLogger,
-  globalOptions,
-  globalProvider,
+  globalLoggerProvider,
 } from "./global.js"
 
 export {

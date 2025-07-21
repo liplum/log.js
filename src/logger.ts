@@ -1,4 +1,3 @@
-import fs from "fs"
 import { LogLevel, LogLevels } from "./level.js"
 import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
@@ -93,10 +92,6 @@ export class LoggerImpl extends EventEmitter implements Logger {
     }
     this.emit("log", payload)
     this.provider.emit("log", payload)
-    if (options.logFile) {
-      // Write to the global log file
-      fs.appendFileSync(options.logFile, `${line}\n`)
-    }
   }
 
   close = () => {

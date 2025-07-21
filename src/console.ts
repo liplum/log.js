@@ -7,9 +7,9 @@ export interface ConsoleLogging {
 }
 
 export const createConsoleLogging = (args?: {
-  logLevels: string[],
+  logLevels?: string[],
 }): ConsoleLogging => {
-  const logLevels = args?.logLevels.map((level) => level.toLocaleUpperCase())
+  const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
 
   const id2Listener = new Map<string, (payload: LoggingTargetEventLogPayload) => void>()
   return {
