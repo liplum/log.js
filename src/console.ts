@@ -1,20 +1,5 @@
 import { Tinter } from "./level.js"
-import { LoggerEventLogPayload } from "./logger.js"
-
-export type LoggingTargetEventLogPayload = LoggerEventLogPayload
-
-export type LoggingTargetEvent = "log"
-
-export type LoggingTargetEventPayload<T extends LoggingTargetEvent> =
-  T extends "log" ? (LoggingTargetEventLogPayload) :
-  never
-
-export interface LoggingTarget {
-  readonly id: string
-
-  on<T extends LoggingTargetEvent>(event: T, listener: (payload: LoggingTargetEventPayload<T>) => void): this
-  off<T extends LoggingTargetEvent>(event: T, listener: (payload: LoggingTargetEventPayload<T>) => void): this
-}
+import { LoggingTarget, LoggingTargetEventLogPayload } from "./listener.js"
 
 export interface ConsoleLogging {
   on: (target: LoggingTarget) => void
@@ -45,6 +30,7 @@ export const createConsoleLogging = (args?: {
       if (listener) {
         target.off("log", listener)
       }
+      id2Listener.delete(target.id)
     }
   }
 }
