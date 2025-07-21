@@ -1,7 +1,7 @@
 import EventEmitter from "events"
 import { LogFormat, EntryFormat, formatEntry, formatMessages } from "./format.js"
 import { LogLevel } from "./level.js"
-import { Logger, LoggerImpl } from "./logger.js"
+import { Logger, LoggerEventLogPayload, LoggerImpl } from "./logger.js"
 import fs from "fs"
 import path from "path"
 
@@ -12,13 +12,18 @@ export type LoggerProviderEventLoggerCreatedPayload = {
   time: Date
 }
 
-export type LoggerProviderEvent = "logger-created"
+export type LoggerProviderEventLogPayload = LoggerEventLogPayload
+
+export type LoggerProviderEvent = "logger-created" | "log"
 
 export type LoggerProviderEventPayload<T extends LoggerProviderEvent> =
   T extends "logger-created" ? (LoggerProviderEventLoggerCreatedPayload) :
+  T extends "log" ? (LoggerProviderEventLogPayload) :
   never
 
 export interface LoggerProvider extends EventEmitter {
+  readonly options: LoggerProviderOptions
+
   createLogger: (channel?: string) => Logger
 
   on<T extends LoggerProviderEvent>(event: T, listener: (payload: LoggerProviderEventPayload<T>) => void): this
@@ -34,26 +39,12 @@ export interface LoggerProviderOptions {
   entryFormat: EntryFormat
 }
 
-export class LoggerProviderImpl extends EventEmitter implements LoggerProvider, LoggerProviderOptions {
-  logFile?: string
-  consoleRequiredLevel?: LogLevel
-  fileRequiredLevel?: LogLevel
-  logFormat: LogFormat
-  entryFormat: EntryFormat
-  constructor({
-    logFile,
-    consoleRequiredLevel,
-    fileRequiredLevel,
-    logFormat,
-    entryFormat,
-  }: LoggerProviderOptions
-  ) {
+export class LoggerProviderImpl extends EventEmitter implements LoggerProvider {
+  readonly options: LoggerProviderOptions
+
+  constructor(options: LoggerProviderOptions) {
     super()
-    this.logFile = logFile
-    this.consoleRequiredLevel = consoleRequiredLevel
-    this.fileRequiredLevel = fileRequiredLevel
-    this.logFormat = logFormat
-    this.entryFormat = entryFormat
+    this.options = options
   }
   createLogger = (channel?: string): Logger => {
     const logger = new LoggerImpl(this, channel)
