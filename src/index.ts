@@ -10,7 +10,10 @@ export {
   createLoggerProvider,
 } from "./provider.js"
 
-export * from "./level.js"
+export {
+  LogLevel,
+  LogLevels,
+} from "./level.js"
 
 export {
   createLogger,

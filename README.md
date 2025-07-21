@@ -34,7 +34,9 @@ log.debug("hello, bug!")
 
 ### Custom log levels
 
-LogLevel is customizable.
+You can define your own log levels in a string.
+
+```js
 
 ### Logging to console and file [WIP]
 

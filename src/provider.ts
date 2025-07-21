@@ -1,6 +1,7 @@
 import EventEmitter from "events"
 import { LogFormat, EntryFormat, formatEntry, formatMessages } from "./format.js"
 import { Logger, LoggerEventLogPayload, LoggerImpl } from "./logger.js"
+import { v7 as uuidv7 } from "uuid"
 
 export type LoggerProviderEventLoggerCreatedPayload = {
   id: string
@@ -19,6 +20,7 @@ export type LoggerProviderEventPayload<T extends LoggerProviderEvent> =
   never
 
 export interface LoggerProvider extends EventEmitter {
+  readonly id: string
   readonly options: LoggerProviderOptions
 
   createLogger: (channel?: string) => Logger
@@ -34,10 +36,12 @@ export interface LoggerProviderOptions {
 }
 
 export class LoggerProviderImpl extends EventEmitter implements LoggerProvider {
+  readonly id: string
   readonly options: LoggerProviderOptions
 
   constructor(options: LoggerProviderOptions) {
     super()
+    this.id = uuidv7()
     this.options = options
   }
 
