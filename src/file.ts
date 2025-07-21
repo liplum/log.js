@@ -24,7 +24,6 @@ export const createFileLogging = (args: {
     channel?: string
   }) => string,
 }): FileLogging => {
-  // uppercase all log levels for consistency
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
   const {
     logDir,
