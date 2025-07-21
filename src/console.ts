@@ -40,7 +40,18 @@ export const createConsoleLogging = (args?: {
         if (logLevels && !logLevels.includes(level.toLocaleUpperCase())) return
 
         const tinter = tinterResolver(level)
-        console.log(tint(message, tinter))
+        const msg = tint(message, tinter)
+        if (level === "ERROR") {
+          console.error(msg)
+        } else if (level === "WARN") {
+          console.warn(msg)
+        } else if (level === "INFO") {
+          console.info(msg)
+        } else if (level === "DEBUG" || level === "VERBOSE") {
+          console.debug(msg)
+        } else {
+          console.log(msg)
+        }
       }
       id2Listener.set(target.id, listener)
       target.on("log", listener)
