@@ -6,7 +6,7 @@ export type Tinter = (...text: any[]) => string
 
 export type TinterResolver = (level: LogLevel) => Tinter | undefined
 
-export const LogLevels = {
+export const defaultLogLevelTinters: Record<string, Tinter | undefined> = {
   ERROR: chalk.bold.red,
   WARN: chalk.yellow,
   INFO: chalk.green,
@@ -15,7 +15,7 @@ export const LogLevels = {
 }
 
 const baseTinterResolver: TinterResolver = (level) => {
-  return LogLevels[level.toLocaleUpperCase()]
+  return defaultLogLevelTinters[level.toLocaleUpperCase()]
 }
 
 export interface ConsoleLogging {

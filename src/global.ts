@@ -5,9 +5,9 @@ import { LoggerProvider, createLoggerProvider } from "./provider.js"
 export const globalLoggerProvider: LoggerProvider = createLoggerProvider()
 
 const globalConsoleLogging = createConsoleLogging({
-  logLevels: process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-    ? undefined
-    : ["error", "warn", "info"],
+  logLevels: process.env.NODE_ENV === "production"
+    ? ["error", "warn", "info"]
+    : undefined,
 })
 
 globalConsoleLogging.on(globalLoggerProvider)

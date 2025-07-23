@@ -1,5 +1,3 @@
-export type LogLevel = string
-
 export enum LogLevels {
   ERROR = "ERROR",
   WARN = "WARN",
@@ -7,3 +5,5 @@ export enum LogLevels {
   DEBUG = "DEBUG",
   VERBOSE = "VERBOSE",
 }
+
+export type LogLevel = LogLevels | keyof typeof LogLevels | string

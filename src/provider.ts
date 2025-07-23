@@ -56,10 +56,6 @@ export class LoggerProviderImpl extends EventEmitter implements LoggerProvider {
   }
 }
 
-export const generateLogFileName = (): string => {
-  return `${new Date().toISOString().slice(0, 10)}.log`
-}
-
 export const createLoggerProvider = (args?: {
   logFormat?: LogFormat
   entryFormat?: EntryFormat
