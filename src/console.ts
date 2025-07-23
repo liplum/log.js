@@ -1,6 +1,7 @@
 import { LogLevel } from "./level.js"
 import { LoggingTarget, LoggingTargetEventPayload } from "./listener.js"
 import chalk from "chalk"
+import * as jsEnv from "browser-or-node"
 
 export type Tinter = (...text: any[]) => string
 
@@ -39,18 +40,20 @@ export const createConsoleLogging = (args?: {
         // If logLevels is specified, only log messages with levels in that array
         if (logLevels && !logLevels.includes(level.toLocaleUpperCase())) return
 
-        const tinter = tinterResolver(level)
-        const msg = tint(message, tinter)
+        if (jsEnv.isNode) {
+          const tinter = tinterResolver(level)
+          message = tint(message, tinter)
+        }
         if (level === "ERROR") {
-          console.error(msg)
+          console.error(message)
         } else if (level === "WARN") {
-          console.warn(msg)
+          console.warn(message)
         } else if (level === "INFO") {
-          console.info(msg)
+          console.info(message)
         } else if (level === "DEBUG" || level === "VERBOSE") {
-          console.debug(msg)
+          console.debug(message)
         } else {
-          console.log(msg)
+          console.log(message)
         }
       }
       id2Listener.set(target.id, listener)
