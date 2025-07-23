@@ -1,12 +1,11 @@
 import fs from "fs"
-import { LoggingTarget, LoggingTargetEventPayload, } from "./listener.js"
+import { LoggingTarget, LoggingTargetEventPayload, LogListener, } from "./listener.js"
 import path from "path"
 import { Logger } from "./logger.js"
 import { LogLevel } from "./level.js"
 
-export interface FileLogging {
-  on: (target: LoggingTarget) => void
-  off: (target: LoggingTarget) => void
+export interface FileLogging extends LogListener {
+
 }
 
 export type LogFileNameResolver = (args: {

@@ -1,5 +1,5 @@
 import { LogLevel } from "./level.js"
-import { LoggingTarget, LoggingTargetEventPayload } from "./listener.js"
+import { LoggingTarget, LoggingTargetEventPayload, LogListener } from "./listener.js"
 import chalk from "chalk"
 import * as jsEnv from "browser-or-node"
 
@@ -19,9 +19,8 @@ const baseTinterResolver: TinterResolver = (level) => {
   return defaultLogLevelTinters[level.toLocaleUpperCase()]
 }
 
-export interface ConsoleLogging {
-  on: (target: LoggingTarget) => void
-  off: (target: LoggingTarget) => void
+export interface ConsoleLogging extends LogListener {
+  
 }
 
 export const createConsoleLogging = (args?: {
