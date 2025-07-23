@@ -19,8 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "browser-or-node": "^3.0.0",
-    "chalk": "^5.4.1",
-    "signal-exit": "^4.1.0"
+    "chalk": "^5.4.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
