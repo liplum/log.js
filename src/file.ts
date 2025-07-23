@@ -1,11 +1,10 @@
 import fs from "fs"
-import { LoggingTarget, LoggingTargetEventPayload, LogListener, } from "./listener.js"
+import { createLogListener, LoggingTarget, LoggingTargetEventPayload, LogListener, } from "./listener.js"
 import path from "path"
 import { Logger } from "./logger.js"
 import { LogLevel } from "./level.js"
 
 export interface FileLogging extends LogListener {
-
 }
 
 export type LogFileNameResolver = (args: {
@@ -14,7 +13,7 @@ export type LogFileNameResolver = (args: {
   level: LogLevel
   time: Date
   channel?: string
-}) => string
+}) => string | Promise<string>
 
 /**
  * Generates a default log file name based on the current date.
@@ -31,43 +30,34 @@ export const createFileLogging = (args: {
   logDir: string,
   resolveLogFileName?: LogFileNameResolver,
 }): FileLogging => {
+
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
   const {
     logDir,
     resolveLogFileName = generateDefaultLogFileName
   } = args
 
-  const id2Listener = new Map<string, (payload: LoggingTargetEventPayload) => void>()
-  return {
-    on: (target: LoggingTarget): void => {
-      const listener = async ({ message, level, ...args }: LoggingTargetEventPayload) => {
-        // Check if the log level is in the specified log levels
-        // If no log levels are specified, log everything
-        // If logLevels is specified, only log messages with levels in that array
-        if (logLevels && !logLevels.includes(level)) return
+  return createLogListener({
+    onLogged: async (target, { message, level, ...args }) => {
+      // Check if the log level is in the specified log levels
+      // If no log levels are specified, log everything
+      // If logLevels is specified, only log messages with levels in that array
+      if (logLevels && !logLevels.includes(level)) return
 
-        await fs.promises.mkdir(logDir, { recursive: true })
+      await fs.promises.mkdir(logDir, { recursive: true })
 
-        const logFile = path.join(logDir, resolveLogFileName({
-          id: target.id,
-          logger: args.logger,
-          level,
-          time: new Date(),
-          channel: args.channel,
-        }))
+      const fileName = await resolveLogFileName({
+        id: target.id,
+        logger: args.logger,
+        level,
+        time: new Date(),
+        channel: args.channel,
+      })
 
-        // Write to the global log file
-        await fs.promises.appendFile(logFile, `${message}\n`)
-      }
-      id2Listener.set(target.id, listener)
-      target.on("log", listener)
-    },
-    off: (target: LoggingTarget): void => {
-      const listener = id2Listener.get(target.id)
-      if (listener) {
-        target.off("log", listener)
-      }
-      id2Listener.delete(target.id)
+      const logFile = path.join(logDir, fileName)
+
+      // Write to the global log file
+      await fs.promises.appendFile(logFile, `${message}\n`)
     }
-  }
+  })
 }

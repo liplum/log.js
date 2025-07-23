@@ -1,10 +1,9 @@
 import { LogLevel } from "./level.js"
-import { LoggingTarget, LoggingTargetEventPayload, LogListener } from "./listener.js"
+import { createLogListener, LoggingTarget, LoggingTargetEventPayload, LogListener } from "./listener.js"
 import chalk from "chalk"
 import * as jsEnv from "browser-or-node"
 
 export type Tinter = (...text: any[]) => string
-
 export type TinterResolver = (level: LogLevel) => Tinter | undefined
 
 export const defaultLogLevelTinters: Record<string, Tinter | undefined> = {
@@ -19,8 +18,11 @@ const baseTinterResolver: TinterResolver = (level) => {
   return defaultLogLevelTinters[level.toLocaleUpperCase()]
 }
 
+const tint = (text: string, color?: Tinter): string => {
+  return color ? color(text) : text
+}
+
 export interface ConsoleLogging extends LogListener {
-  
 }
 
 export const createConsoleLogging = (args?: {
@@ -30,44 +32,29 @@ export const createConsoleLogging = (args?: {
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
   const tinterResolver = args?.tinterResolver || baseTinterResolver
 
-  const id2Listener = new Map<string, (payload: LoggingTargetEventPayload) => void>()
-  return {
-    on: (target: LoggingTarget): void => {
-      const listener = ({ message, level }: LoggingTargetEventPayload) => {
-        // Check if the log level is in the specified log levels
-        // If no log levels are specified, log everything
-        // If logLevels is specified, only log messages with levels in that array
-        if (logLevels && !logLevels.includes(level.toLocaleUpperCase())) return
+  return createLogListener({
+    onLogged: async (target, { message, level, ...args }) => {
+      // Check if the log level is in the specified log levels
+      // If no log levels are specified, log everything
+      // If logLevels is specified, only log messages with levels in that array
+      if (logLevels && !logLevels.includes(level.toLocaleUpperCase())) return
 
-        if (jsEnv.isNode) {
-          const tinter = tinterResolver(level)
-          message = tint(message, tinter)
-        }
-        if (level === "ERROR") {
-          console.error(message)
-        } else if (level === "WARN") {
-          console.warn(message)
-        } else if (level === "INFO") {
-          console.info(message)
-        } else if (level === "DEBUG" || level === "VERBOSE") {
-          console.debug(message)
-        } else {
-          console.log(message)
-        }
+      if (jsEnv.isNode) {
+        const tinter = tinterResolver(level)
+        message = tint(message, tinter)
       }
-      id2Listener.set(target.id, listener)
-      target.on("log", listener)
-    },
-    off: (target: LoggingTarget): void => {
-      const listener = id2Listener.get(target.id)
-      if (listener) {
-        target.off("log", listener)
+      if (level === "ERROR") {
+        console.error(message)
+      } else if (level === "WARN") {
+        console.warn(message)
+      } else if (level === "INFO") {
+        console.info(message)
+      } else if (level === "DEBUG" || level === "VERBOSE") {
+        console.debug(message)
+      } else {
+        console.log(message)
       }
-      id2Listener.delete(target.id)
     }
-  }
+  })
 }
 
-const tint = (text: string, color?: Tinter): string => {
-  return color ? color(text) : text
-}

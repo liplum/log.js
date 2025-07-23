@@ -15,13 +15,13 @@ export interface LogListener {
 export const createLogListener = ({
   onLogged,
 }: {
-  onLogged: (payload: LoggingTargetEventPayload) => Promise<void> | void
+  onLogged: (target: LoggingTarget, payload: LoggingTargetEventPayload) => Promise<void> | void
 }): LogListener => {
   const id2Listener = new Map<string, (payload: LoggingTargetEventPayload) => void>()
   return {
     on: (target: LoggingTarget): void => {
       const listener = async (payload: LoggingTargetEventPayload) => {
-        await onLogged(payload)
+        await onLogged(target, payload)
       }
       id2Listener.set(target.id, listener)
       target.on("log", listener)
