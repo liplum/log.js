@@ -1,5 +1,5 @@
 import test from 'ava'
-import { createConsoleLogging, createLogger, createLoggerProvider } from "./dist/index.js"
+import { createConsoleLogging, createLogger, createLoggerProvider, createLoggingListener } from "./dist/index.js"
 
 test('test logging', t => {
   const log = createLogger("Main")
@@ -97,7 +97,6 @@ test('test logger provider events', t => {
   t.pass()
 })
 
-
 test('test global logging', t => {
   const logA = createLogger("GlobalA")
   const logB = createLogger("GlobalB")
@@ -112,5 +111,24 @@ test('test global logging', t => {
   logB.error("hello, error!")
   logB.verbose("hello, hello, hello!")
   logB.debug("hello, bug!")
+  t.pass()
+})
+
+test('custom logging listener', t => {
+  const messages = []
+  const listener = createLoggingListener({
+    onLogged: (target,{channel,level,message}) => {
+      messages.push({ channel, level, message })
+    },
+  })
+  const log = createLogger("Main")
+  listener.on(log)
+  log.info("hello, world!")
+  log.warn("hello, warning!")
+  log.error("hello, error!")
+  log.verbose("hello, hello, hello!")
+  log.debug("hello, bug!")
+  listener.off(log)
+  console.log("Logged Messages:", messages)
   t.pass()
 })

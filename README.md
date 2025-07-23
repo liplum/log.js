@@ -113,3 +113,23 @@ log.error("hello, error!")
 log.verbose("hello, hello, hello!")
 log.debug("hello, bug!")
 ```
+
+You can create your own LoggingListener.
+
+```js
+const messages = []
+const listener = createLoggingListener({
+  onLogged: (target,{channel,level,message}) => {
+    messages.push({ channel, level, message })
+  },
+})
+const log = createLogger("Main")
+listener.on(log)
+log.info("hello, world!")
+log.warn("hello, warning!")
+log.error("hello, error!")
+log.verbose("hello, hello, hello!")
+log.debug("hello, bug!")
+listener.off(log)
+console.log("Logged Messages:", messages)
+```

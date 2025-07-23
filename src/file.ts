@@ -1,10 +1,10 @@
 import fs from "fs"
-import { createLogListener, LoggingTarget, LoggingTargetEventPayload, LogListener, } from "./listener.js"
+import { createLoggingListener, LoggingTarget, LoggingTargetEventPayload, LoggingListener, } from "./listener.js"
 import path from "path"
 import { Logger } from "./logger.js"
 import { LogLevel } from "./level.js"
 
-export interface FileLogging extends LogListener {
+export interface FileLogging extends LoggingListener {
 }
 
 export type LogFileNameResolver = (args: {
@@ -37,7 +37,7 @@ export const createFileLogging = (args: {
     resolveLogFileName = generateDefaultLogFileName
   } = args
 
-  return createLogListener({
+  return createLoggingListener({
     onLogged: async (target, { message, level, ...args }) => {
       // Check if the log level is in the specified log levels
       // If no log levels are specified, log everything

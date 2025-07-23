@@ -1,5 +1,5 @@
 import { LogLevel } from "./level.js"
-import { createLogListener, LoggingTarget, LoggingTargetEventPayload, LogListener } from "./listener.js"
+import { createLoggingListener, LoggingTarget, LoggingTargetEventPayload, LoggingListener } from "./listener.js"
 import chalk from "chalk"
 import * as jsEnv from "browser-or-node"
 
@@ -22,7 +22,7 @@ const tint = (text: string, color?: Tinter): string => {
   return color ? color(text) : text
 }
 
-export interface ConsoleLogging extends LogListener {
+export interface ConsoleLogging extends LoggingListener {
 }
 
 export const createConsoleLogging = (args?: {
@@ -32,7 +32,7 @@ export const createConsoleLogging = (args?: {
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
   const tinterResolver = args?.tinterResolver || baseTinterResolver
 
-  return createLogListener({
+  return createLoggingListener({
     onLogged: async (target, { message, level, ...args }) => {
       // Check if the log level is in the specified log levels
       // If no log levels are specified, log everything

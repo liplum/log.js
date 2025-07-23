@@ -7,16 +7,16 @@ export interface LoggingTarget extends EventEmitter {
   readonly id: string
 }
 
-export interface LogListener {
+export interface LoggingListener {
   on: (target: LoggingTarget) => void
   off: (target: LoggingTarget) => void
 }
 
-export const createLogListener = ({
+export const createLoggingListener = ({
   onLogged,
 }: {
   onLogged: (target: LoggingTarget, payload: LoggingTargetEventPayload) => Promise<void> | void
-}): LogListener => {
+}): LoggingListener => {
   const id2Listener = new Map<string, (payload: LoggingTargetEventPayload) => void>()
   return {
     on: (target: LoggingTarget): void => {
