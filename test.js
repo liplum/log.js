@@ -1,5 +1,8 @@
 import test from 'ava'
-import { createConsoleLogging, createLogger, createLoggerProvider, createLoggingListener } from "./dist/index.js"
+import { createConsoleLogging, createFileLogging, createLogger, createLoggerProvider, createLoggingListener } from "./dist/index.js"
+import os from "os"
+import path from 'path'
+import { randomUUID } from 'crypto'
 
 test('test logging', t => {
   const log = createLogger("Main")
@@ -117,7 +120,7 @@ test('test global logging', t => {
 test('custom logging listener', t => {
   const messages = []
   const listener = createLoggingListener({
-    onLogged: (target,{channel,level,message}) => {
+    onLogged: (target, { channel, level, message }) => {
       messages.push({ channel, level, message })
     },
   })
@@ -130,5 +133,23 @@ test('custom logging listener', t => {
   log.debug("hello, bug!")
   listener.off(log)
   console.log("Logged Messages:", messages)
+  t.pass()
+})
+
+test("file logging ", t => {
+  const fileLogging = createFileLogging({
+    logLevels: ["INFO", "WARN", "ERROR"],
+    logDir: path.join(os.tmpdir(), randomUUID()),
+    filePath: "./test.log",
+  })
+  const log = createLogger("FileLogger")
+  fileLogging.on(log)
+  log.info("hello, world!")
+  log.warn("hello, warning!")
+  log.error("hello, error!")
+  log.verbose("hello, hello, hello!")
+  log.debug("hello, bug!")
+  fileLogging.off(log)
+  console.log(`Log directory: ${logDir}`)
   t.pass()
 })
