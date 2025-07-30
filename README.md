@@ -78,6 +78,24 @@ logB.debug("hello, bug!")
 consoleLogging.off(logProvider)
 ```
 
+Logging into local file.
+
+```js
+const fileLogging = createFileLogging({
+  logLevels: ["INFO", "WARN", "ERROR"],
+  logDir: path.join(os.tmpdir(), randomUUID()),
+  filePath: "./test.log",
+})
+const log = createLogger("FileLogger")
+fileLogging.on(log)
+log.info("hello, world!")
+log.warn("hello, warning!")
+log.error("hello, error!")
+log.verbose("hello, hello, hello!")
+log.debug("hello, bug!")
+fileLogging.off(log)
+```
+
 ### Logger events
 
 The loggers can emit events like `log` when a log message comes out.
