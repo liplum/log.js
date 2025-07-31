@@ -25,6 +25,14 @@ const tint = (text: string, color?: Tinter): string => {
 export interface ConsoleLogging extends LoggingListener {
 }
 
+/**
+ * Creates a console logging listener that outputs log messages to the console,
+ * with optional log level filtering and message tinting based on log level.
+ *
+ * @param logLevels An array of log levels to filter logs. If not provided, all log levels will be logged.
+ * @param tinterResolver A function to resolve the tinter (colorizer) for each log level. Defaults to built-in color mapping.
+ * @returns
+ */
 export const createConsoleLogging = (args?: {
   logLevels?: string[],
   tinterResolver?: TinterResolver,
