@@ -28,7 +28,7 @@ const generateDefaultLogFileName: LogFileNameResolver = () => {
 export const createFileLogging = (args: {
   logLevels?: string[],
   logDir: string,
-  resolveLogFileName?: LogFileNameResolver,
+  resolveLogFileName?: LogFileNameResolver | string,
 }): FileLogging => {
 
   const logLevels = args?.logLevels?.map((level) => level.toLocaleUpperCase())
@@ -46,13 +46,15 @@ export const createFileLogging = (args: {
 
       await fs.promises.mkdir(logDir, { recursive: true })
 
-      const fileName = await resolveLogFileName({
-        id: target.id,
-        logger: args.logger,
-        level,
-        time: new Date(),
-        channel: args.channel,
-      })
+      const fileName = typeof resolveLogFileName === "string"
+        ? resolveLogFileName
+        : await resolveLogFileName({
+          id: target.id,
+          logger: args.logger,
+          level,
+          time: new Date(),
+          channel: args.channel,
+        })
 
       const logFile = path.join(logDir, fileName)
 
