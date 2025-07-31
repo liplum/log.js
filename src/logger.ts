@@ -11,7 +11,7 @@ export type LoggerEventLogPayload = {
   id: string
   logger: Logger
   level: LogLevel
-  rawMessages: LogMessage[]
+  rawMessages: string[]
   message: string
   time: Date
   channel?: string
@@ -84,7 +84,7 @@ export class LoggerImpl extends EventEmitter implements Logger {
       id: crypto.randomUUID(),
       logger: this,
       level,
-      rawMessages: msgs,
+      rawMessages: messages,
       message: line,
       time,
       channel: this.channel,
