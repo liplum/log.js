@@ -41,7 +41,7 @@ export const formatMessages: LogFormat = ({
     fractionalSecondDigits: 2, // Milliseconds (2 digits)
     hour12: false, // Use 24-hour format
   })
-  channel = channel ? `[${channel}] ` : " "
-  let line = `|${timestamp}|${level}|${channel}` + messages.join(", ")
+  const channelRaw = channel ? `[${channel}]` : ""
+  const line = `|${timestamp}|${level}|${channelRaw}` + " " + messages.join(" ")
   return line
 }
