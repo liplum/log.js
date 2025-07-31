@@ -15,6 +15,14 @@ export type LogFileNameResolver = (args: {
   channel?: string
 }) => string | Promise<string>
 
+export type LogDirResolver = (args: {
+  id: string
+  logger: Logger
+  level: LogLevel
+  time: Date
+  channel?: string
+}) => string | Promise<string>
+
 /**
  * Generates a default log file name based on the current date.
  * The format is `YYYY-MM-DD.log`, which creates a new log file for each day.
@@ -25,9 +33,15 @@ const generateDefaultLogFileName: LogFileNameResolver = () => {
   return `${new Date().toISOString().slice(0, 10)}.log`
 }
 
+/**
+ * @param logLevels an array of log levels to filter logs. If not provided, all log levels will be logged.
+ * @param logDir the directory where log files will be stored. It will be created recursively, if it does not exist.
+ * @param resolveLogFileName by default, it generates a log file name based on the current date. You can provide a custom function to resolve the log file name. If a string is provided, it will be used as the log file name directly.
+ * @returns 
+ */
 export const createFileLogging = (args: {
   logLevels?: string[],
-  logDir: string,
+  logDir: LogDirResolver | string,
   resolveLogFileName?: LogFileNameResolver | string,
 }): FileLogging => {
 
@@ -43,8 +57,17 @@ export const createFileLogging = (args: {
       // If no log levels are specified, log everything
       // If logLevels is specified, only log messages with levels in that array
       if (logLevels && !logLevels.includes(level)) return
+      const actualLogDir = typeof logDir === "string"
+        ? logDir
+        : await logDir({
+          id: target.id,
+          logger: args.logger,
+          level,
+          time: args.time,
+          channel: args.channel,
+        })
 
-      await fs.promises.mkdir(logDir, { recursive: true })
+      await fs.promises.mkdir(actualLogDir, { recursive: true })
 
       const fileName = typeof resolveLogFileName === "string"
         ? resolveLogFileName
@@ -52,14 +75,16 @@ export const createFileLogging = (args: {
           id: target.id,
           logger: args.logger,
           level,
-          time: new Date(),
+          time: args.time,
           channel: args.channel,
         })
 
-      const logFile = path.join(logDir, fileName)
+      const logFile = path.join(actualLogDir, fileName)
 
       // Write to the global log file
-      await fs.promises.appendFile(logFile, `${message}\n`)
+      await fs.promises.appendFile(logFile, `${message}\n`, {
+        encoding: "utf-8",
+      })
     }
   })
 }
