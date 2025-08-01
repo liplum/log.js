@@ -137,9 +137,10 @@ test('custom logging listener', t => {
 })
 
 test("file logging ", t => {
+  const logDir = path.join(os.tmpdir(), randomUUID())
   const fileLogging = createFileLogging({
     logLevels: ["INFO", "WARN", "ERROR"],
-    logDir: path.join(os.tmpdir(), randomUUID()),
+    logDir,
     filePath: "./test.log",
   })
   const log = createLogger("FileLogger")
