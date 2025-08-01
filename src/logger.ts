@@ -1,6 +1,6 @@
 import { LogLevel, LogLevels } from "./level.js"
 import EventEmitter from "events"
-import { EntryFormat, formatMessage } from "./format.js"
+import { formatMessage } from "./format.js"
 import { LoggerProvider } from "./provider.js"
 
 export type LazyLogging = () => any

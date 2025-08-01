@@ -1,6 +1,6 @@
 import fs from "fs"
-import { createLoggingListener, LoggingTarget, LoggingTargetEventPayload, LoggingListener, } from "./listener.js"
 import path from "path"
+import { createLoggingListener, LoggingTarget, LoggingTargetEventPayload, LoggingListener, } from "./listener.js"
 import { Logger } from "./logger.js"
 import { LogLevel } from "./level.js"
 

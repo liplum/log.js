@@ -1,5 +1,5 @@
 import { EventEmitter } from "stream"
-import { LoggerEventLogPayload } from "./logger"
+import { LoggerEventLogPayload } from "./logger.js"
 
 export type LoggingTargetEventPayload = LoggerEventLogPayload
 
