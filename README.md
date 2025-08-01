@@ -124,7 +124,7 @@ The Logger emits `log` event when a message is logged on it.
 ```js
 const log = createLogger("Main")
 log.on("log", (e) => {
-  console.log("!Log!", e.id, e.channel, e.level, e.message)
+  console.log("!Log!", e.id, e.channel, e.level, e.rawMessages)
 })
 log.info("hello, world!")
 log.warn("hello, warning!")
@@ -138,10 +138,10 @@ The LogProvider emits `logger-created` when a logger is created from it, and `lo
 ```js
 const logProvider = createLoggerProvider()
 logProvider.on("logger-created", (e) => {
-  console.log("!Logger Created!", e.id, e.channel)
+  console.log("!Logger Created!", e.id, e.rawMessages)
 })
 logProvider.on("log", (e) => {
-  console.log("!Log!", e.id, e.channel, e.level, e.message)
+  console.log("!Log!", e.id, e.channel, e.level, e.rawMessages)
 })
 const log = logProvider.createLogger("Provider")
 log.info("hello, world!")
@@ -156,8 +156,8 @@ You can create your own LoggingListener.
 ```js
 const messages = []
 const listener = createLoggingListener({
-  onLogged: (target,{channel,level,message}) => {
-    messages.push({ channel, level, message })
+  onLogged: (target,{channel, level, rawMessages}) => {
+    messages.push({ channel, level, rawMessages })
   },
 })
 const log = createLogger("Main")

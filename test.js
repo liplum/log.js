@@ -73,7 +73,7 @@ test('test logger provider with config', t => {
 test('test logger events', t => {
   const log = createLogger("Main")
   log.on("log", (e) => {
-    console.log("!Log!", e.id, e.channel, e.level, e.message)
+    console.log("!Log!", e.id, e.channel, e.level, e.rawMessages)
   })
   log.info("hello, world!")
   log.warn("hello, warning!")
@@ -89,7 +89,7 @@ test('test logger provider events', t => {
     console.log("!Logger Created!", e.id, e.channel)
   })
   logProvider.on("log", (e) => {
-    console.log("!Log!", e.id, e.channel, e.level, e.message)
+    console.log("!Log!", e.id, e.channel, e.level, e.rawMessages)
   })
   const log = logProvider.createLogger("Provider")
   log.info("hello, world!")
@@ -120,8 +120,8 @@ test('test global logging', t => {
 test('custom logging listener', t => {
   const messages = []
   const listener = createLoggingListener({
-    onLogged: (target, { channel, level, message }) => {
-      messages.push({ channel, level, message })
+    onLogged: (target, { channel, level, rawMessages }) => {
+      messages.push({ channel, level, rawMessages })
     },
   })
   const log = createLogger("Main")
