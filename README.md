@@ -28,11 +28,30 @@ log.debug("hello, bug!")
 - [x] Custom log levels
 - [x] Logger events
 - [x] Logging to console and file
-- [ ] Sub-level logger
+- [ ] Multi-channel logger
+
+## Configuration
+
+You can configure the log format and entry format.
+
+```js
+const logProvider = createLoggerProvider({
+  logFormat: ({time, level, channel, messages}) => {
+    return `[${time.toISOString()}] [${level}] [${channel}] ${messages.join(", ")}`
+  },
+  entryFormat: (entry) => `${entry}`,
+})
+const log = logProvider.createLogger("ChannelName")
+```
 
 ### Custom log levels
 
 You can define your own log levels in a string.
+
+```js
+const log = createLogger("Main")
+log.log("CUSTOM", "hello, warning!")
+```
 
 ### Logging to console and file
 
