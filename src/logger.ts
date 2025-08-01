@@ -28,11 +28,13 @@ export interface Logger extends EventEmitter {
   readonly id: string
   readonly channel?: string
 
+  fatal: (...msgs: LogMessage[]) => void
   error: (...msgs: LogMessage[]) => void
   warn: (...msgs: LogMessage[]) => void
   info: (...msgs: LogMessage[]) => void
   debug: (...msgs: LogMessage[]) => void
   verbose: (...msgs: LogMessage[]) => void
+  trace: (...msgs: LogMessage[]) => void
   log: (level: LogLevel, ...msgs: LogMessage[]) => void
 
   close: () => void
@@ -54,6 +56,10 @@ export class LoggerImpl extends EventEmitter implements Logger {
     this.id = crypto.randomUUID()
   }
 
+  fatal = (...msgs: LogMessage[]): void => {
+    this.log(LogLevels.FATAL, ...msgs)
+  }
+
   error = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.ERROR, ...msgs)
   }
@@ -72,6 +78,10 @@ export class LoggerImpl extends EventEmitter implements Logger {
 
   verbose = (...msgs: LogMessage[]): void => {
     this.log(LogLevels.VERBOSE, ...msgs)
+  }
+
+  trace = (...msgs: LogMessage[]): void => {
+    this.log(LogLevels.TRACE, ...msgs)
   }
 
   log = (level: LogLevel, ...msgs: LogMessage[]): void => {
