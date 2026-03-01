@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.15",
-    "ava": "^6.4.1",
+    "ava": "^7.0.0",
     "typescript": "^5.8.3"
   },
   "types": "./dist/index.d.ts",
